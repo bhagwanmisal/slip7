@@ -1,0 +1,174 @@
+#include <stdio.h>
+int main()
+#define max(a,b) a>b?a:b
+{
+ int a,b;
+ printf("Enter two numbers");
+ scanf("%d%d",&a,&b);
+ printf("Maximum=%d",max(a,b));
+}
+#include <stdio.h>
+int main()
+{
+ FILE *f;
+ int i,n;
+ char ch;
+ f=fopen("square.txt","w");
+ printf("enter lim");
+ scanf("%d",&n);
+ for(i=1;i<=n;i++)
+ {
+ fprintf(f,"%d\n",i*i);
+ }
+ fclose(f);
+}
+
+
+#include <stdio.h>
+#include <stdlib.h>
+int main()
+{
+ int *a,n,max,s=0,i;
+ printf("Enter lim");
+ scanf("%d",&n);
+ a=(int *)calloc(n,sizeof(int));
+ printf("Enter n numbers");
+ for(i=0;i<n;i++)
+ {
+ scanf("%d",(a+i));
+ }
+ for(i=0;i<n;i++)
+ {
+ s=s+*(a+i);
+ }
+ printf("Sum=%d",s);
+ printf("Average=%d",s/n);
+ max=*(a+0);
+ for(i=0;i<n;i++)
+ {
+ if(*(a+i)>max)
+ max=*(a+i);
+ }
+ printf("Largest Number=%d",max);
+}
+
+
+
+RDBMS
+slip7=# create table project(p_no int primary key,p_name varchar(25),start_date date,status 
+varchar(30));
+CREATE TABLE
+slip7=# insert into project values(101,'OTF','2020-11-12','Incomplete');
+INSERT 0 1
+slip7=# insert into project values(102,'ONTF','2021-10-01','Incomplete');
+INSERT 0 1
+slip7=# select * from project;
+ p_no | p_name | start_date | status 
+------+--------+------------+------------
+ 101 | OTF | 2020-11-12 | Incomplete
+ 102 | ONTF | 2021-10-01 | Incomplete
+(2 rows)
+
+
+slip7=# create table employee(e_no int primary key,e_name varchar(50),age int,date_ofjoining 
+date,project_no int references project(p_no));
+CREATE TABLE
+slip7=# insert into employee values(1,'Shweta',21,'2022-02-01',101);
+INSERT 0 1
+slip7=# insert into employee values(2,'Devrat',26,'2019-05-01',102);
+INSERT 0 1
+slip7=# insert into employee values(3,'Ruchi',30,'2019-05-03',101);
+INSERT 0 1
+slip7=# insert into employee values(4,'Harish',24,'2018-05-15',101);
+INSERT 0 1
+slip7=# select * from employee;
+ e_no | e_name | age | date_ofjoining | project_no 
+------+--------+-----+----------------+------------
+ 1 | Shweta | 21 | 2022-02-01 | 101
+ 2 | Devrat | 26 | 2019-05-01 | 102
+ 3 | Ruchi | 30 | 2019-05-03 | 101
+ 4 | Harish | 24 | 2018-05-15 | 101
+(4 rows)
+
+
+slip7=# create or replace function fun1(e_name1 varchar(20)) returns void
+slip7-# as
+slip7-# $$
+slip7$# declare
+slip7$# ans project%rowtype;
+slip7$# begin
+slip7$# select project.* into ans from employee,project where employee.project_no=project.p_no
+slip7$# AND e_name=e_name1;
+slip7$# raise notice'Project no=%',ans.p_no;
+slip7$# raise notice'Project name=%',ans.p_name;
+slip7$# raise notice'Start date=%',ans.start_date;
+slip7$# raise notice'Status=%',ans.status;
+slip7$# end;
+slip7$# $$
+slip7-# language plpgsql;
+CREATE FUNCTION
+slip7=# 
+slip7=# select fun1('Shweta');
+NOTICE: Project no=101
+NOTICE: Project name=OTF
+NOTICE: Start date=2020-11-12
+NOTICE: Status=Incomplete
+slip7=# create or replace function f1() returns trigger
+slip7-# as
+slip7-# $$
+slip7$# begin
+slip7$# if(new.age<21)then
+slip7$# raise notice'Age should not be less than 21';
+slip7$# end if;
+slip7$# end;
+slip7$# $$
+slip7-# language plpgsql;
+CREATE FUNCTION
+slip7=# 
+slip7=# create trigger t1
+slip7-# before insert on employee
+slip7-# for each row execute procedure f1();
+CREATE TRIGGER
+slip7=# insert into employee values(5,'Harish',19,'2018-05-15',101);
+NOTICE: Age should not be less than 21
+ERROR: control reached end of trigger procedure without RETURN
+CONTEXT: PL/pgSQL function f1()
+
+
+
+slip7=# create or replace function f1(proj_name varchar(30)) returns void
+slip7-# as
+slip7-# $$
+slip7$# declare
+slip7$# c1 cursor for select * from project,employee where employee.project_no=project.p_no
+slip7$# AND project.p_name=proj_name;
+slip7$# r1 employee%rowtype;
+slip7$# begin
+slip7$# for r1 in c1
+slip7$# loop
+slip7$# raise notice'Emp no=%',r1.e_no;
+slip7$# raise notice'Emp name=%',r1.e_name;
+slip7$# raise notice'Age=%',r1.age;
+slip7$# raise notice'Date of joining=%',r1.date_ofjoining;
+slip7$# raise notice'Project no=%',r1.project_no;
+slip7$# end loop;
+slip7$# end;
+slip7$# $$
+slip7-# language plpgsql;
+CREATE FUNCTION
+slip7=# select f1('OTF');
+NOTICE: Emp no=1
+NOTICE: Emp name=Shweta
+NOTICE: Age=21
+NOTICE: Date of joining=2022-02-01
+NOTICE: Project no=101
+NOTICE: Emp no=3
+NOTICE: Emp name=Ruchi
+NOTICE: Age=30
+NOTICE: Date of joining=2019-05-03
+NOTICE: Project no=101
+NOTICE: Emp no=4
+NOTICE: Emp name=Harish
+NOTICE: Age=24
+NOTICE: Date of joining=2018-05-15
+NOTICE: Project no=1010
